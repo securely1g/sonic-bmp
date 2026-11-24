@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           bazel build //:runtime //:runtime.debug_symbols //:runtime_packages.json
-          bazel test //:install_test
+          bazel test //:bmp_parser_test //:install_test
           tar -tf "$(bazel cquery --output=files //:runtime)" | grep -F 'etc/bmp/openbmpd.conf'
       - name: Run the collector on Trixie
         shell: bash

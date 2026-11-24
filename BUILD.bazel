@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_python//python:py_test.bzl", "py_test")
 load("@sonic_build_infra//oci:runtime_packages.bzl", "runtime_packages")
 load("@sonic_build_infra//tar:sonic_deploy_tar.bzl", "sonic_deploy_tar")
@@ -55,6 +56,32 @@ runtime_packages(
     apt_packages = {
         "@bmp_runtime_debian//libyaml-cpp0.8:data": "@bmp_runtime_debian//libyaml-cpp0.8:control",
     },
+)
+
+# Exercise the same backend-independent parser and reader sources as CTest.
+cc_test(
+    name = "bmp_parser_test",
+    srcs = [
+        "Server/src/Config.cpp",
+        "Server/src/Logger.cpp",
+        "Server/src/bmp/BMPReader.cpp",
+        "Server/src/bmp/parseBMP.cpp",
+        "Server/src/md5.cpp",
+        "Server/tests/parseBMP_test.cpp",
+    ] + glob([
+        "Server/src/*.h",
+        "Server/src/*.hpp",
+        "Server/src/bgp/**/*.cpp",
+        "Server/src/bgp/**/*.h",
+        "Server/src/bmp/*.h",
+    ]),
+    copts = ["-std=c++14", "-pthread"],
+    includes = ["Server/src", "Server/src/bgp", "Server/src/bgp/linkstate", "Server/src/bmp"],
+    linkopts = ["-pthread"],
+    deps = [
+        "@bmp_build_debian//libboost-dev:libboost",
+        "@bmp_build_debian//libyaml-cpp-dev:libyaml-cpp_cc",
+    ],
 )
 
 py_test(
